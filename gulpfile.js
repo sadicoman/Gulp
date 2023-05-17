@@ -24,6 +24,9 @@ const browserSyncServer = require("browser-sync").create();
 const browserify = require("browserify");
 const source = require("vinyl-source-stream");
 const buffer = require("vinyl-buffer");
+const webpack = require("webpack-stream");
+const webpackConfig = require("./webpack.config");
+const util = require("gulp-util");
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -84,26 +87,17 @@ const css = () => {
     );
 };
 
-// Lint, transpile, concatenate and minify JavaScript, create sourcemaps
 const javascript = () => {
-    const b = browserify({
-        entries: "./src/assets/js/main.js",
-        debug: true,
-        transform: [["babelify", { presets: ["@babel/preset-env"] }]],
-    });
-
-    return b
-        .bundle()
-        .pipe(source("main.min.js"))
-        .pipe(buffer())
+    return gulp
+        .src(paths.scripts.src)
         .pipe(plumber())
-        .pipe(gulpIf(!isProduction, sourcemaps.init({ loadMaps: true })))
-        .pipe(eslint())
+        .pipe(gulpIf(!isProduction, sourcemaps.init()))
+        .pipe(webpack(webpackConfig))
         .pipe(strip())
         .pipe(uglify())
-        .on("error", console.error) // Remplacez 'log.error' par 'console.error'
         .pipe(gulpIf(!isProduction, sourcemaps.write("./")))
-        .pipe(gulp.dest("./dist/assets/js/"));
+        .pipe(gulp.dest(paths.scripts.dest))
+        .pipe(browserSyncServer.stream());
 };
 
 // Copy HTML files

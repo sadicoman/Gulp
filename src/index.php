@@ -6,7 +6,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Document</title>
 
-		<script src="assets/js/main.min.js" defer></script>
+		<script src="assets/js/main.js" defer></script>
 		<link href="assets/css/main.css" rel="stylesheet" />
 	</head>
 	<body>
