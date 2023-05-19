@@ -137,3 +137,98 @@ Babelify est un transformateur Browserify pour Babel, permettant de transpiler l
 ```
 npm install --save-dev babelify
 ```
+
+## Gulp-Util
+
+Gulp-util est une collection d'utilitaires pour aider à travailler avec Gulp.
+
+```
+npm install --save-dev gulp-util
+```
+
+## Vinyl-Buffer et Vinyl-Source-Stream
+
+Vinyl est un format de métadonnées très flexible qui décrit les fichiers. Vinyl-Buffer et Vinyl-Source-Stream sont des modules qui facilitent le travail avec les flux de fichiers Vinyl dans Gulp.
+
+```
+npm install --save-dev vinyl-buffer vinyl-source-stream
+```
+
+## Webpack
+
+Webpack est un module de bundler populaire pour JavaScript. Il vous permet de lier tous vos modules JavaScript ensemble dans un ou plusieurs fichiers de sortie, tout en tenant compte des dépendances.
+
+```
+npm install --save-dev webpack webpack-stream
+```
+
+## TerserWebpackPlugin
+
+Terser est une minificateur JavaScript populaire qui est capable de parcourir et de transformer votre code afin de le rendre aussi petit que possible. Ce plugin est le minificateur par défaut utilisé par Webpack lorsqu'il est en mode production. Il supprime les espaces blancs inutiles, les commentaires, renomme les variables et les fonctions avec des noms plus courts, et effectue d'autres optimisations pour réduire la taille de votre code.
+
+Pour l'installer :
+
+```
+npm install terser-webpack-plugin --save-dev
+```
+
+## Tree Shaking avec Webpack
+
+C'est une fonctionnalité fournie par Webpack qui permet d'éliminer le code mort de vos bundles. Le code mort est le code qui est inclus dans votre bundle mais qui n'est jamais utilisé. Par exemple, vous pouvez avoir des fonctions ou des modules qui sont importés mais jamais utilisés. Avec le Tree Shaking, Webpack est capable de détecter et de supprimer ce code inutilisé, ce qui permet de réduire la taille de votre bundle.
+
+Pour l'activer, il suffit de mettre mode: 'production' dans votre fichier webpack.config.js.
+
+## Modification du script JavaScript
+
+Avec l'ajout de Webpack et Terser, le script pour le JavaScript est modifié. Il va intégrer Webpack et son minificateur Terser :
+
+```
+const javascript = () => {
+    return gulp
+        .src(paths.scripts.src)
+        .pipe(plumber())
+        .pipe(gulpIf(!isProduction, sourcemaps.init()))
+        .pipe(webpack(webpackConfig))
+        .pipe(strip())
+        .pipe(gulpIf(!isProduction, sourcemaps.write("./")))
+        .pipe(gulp.dest(paths.scripts.dest))
+        .pipe(browserSyncServer.stream());
+};
+
+```
+
+Et assurez-vous que le mode de production est activé dans votre fichier webpack.config.js pour activer le Tree Shaking et Terser :
+
+```
+// webpack.config.js
+module.exports = {
+    mode: process.env.NODE_ENV || "production",
+    module: {
+        rules: [
+            {
+                test: /\.js$/,
+                exclude: /node_modules/,
+                use: {
+                    loader: "babel-loader",
+                    options: {
+                        presets: ["@babel/preset-env"],
+                    },
+                },
+            },
+        ],
+    },
+    resolve: {
+        modules: ["node_modules"],
+    },
+    optimization: {
+        minimizer: [
+            new TerserPlugin({
+                extractComments: false,
+            }),
+        ],
+    },
+};
+
+```
+
+Dans ce script, nous utilisons Webpack pour effectuer le bundle de notre JavaScript, qui sera ensuite minifié par Terser si nous sommes en mode production.
